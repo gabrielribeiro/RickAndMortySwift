@@ -49,13 +49,6 @@ func newJSONEncoder() -> JSONEncoder {
     return encoder
 }
 
-extension Encodable {
-    func toStubData() throws -> Data {
-        let encoder = JSONEncoder()
-        return try encoder.encode(self)
-    }
-}
-
 // MARK: - URLSession response handlers
 
 extension URLSession {

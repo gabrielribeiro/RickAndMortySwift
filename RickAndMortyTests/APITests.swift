@@ -27,7 +27,7 @@ final class APITests: XCTestCase {
     
     func testGetCharactersSuccess() throws {
         let mockService = MockNetworkService()
-        mockService.dataToReturn = try stubData()
+        mockService.dataToReturn = try CharactersResponse.sampleData().toStubData()
         
         let api = API(networkService: mockService)
         
@@ -67,16 +67,5 @@ final class APITests: XCTestCase {
         })
         
         wait(for: [expectation], timeout: 10.0)
-    }
-    
-    private func stubData() throws -> Data {
-        let character1 = Character(id: 1, name: "Rick", status: "Alive", species: "Human", type: "Scientist", gender: "Male", image: "https://example.com/rick.jpg")
-        let character2 = Character(id: 2, name: "Morty", status: "Alive", species: "Human", type: "Sidekick", gender: "Male", image: "https://example.com/morty.jpg")
-
-        let info = Info(count: 2, pages: 1, next: nil, prev: nil)
-
-        let charactersResponse = CharactersResponse(info: info, results: [character1, character2])
-        
-        return try charactersResponse.toStubData()
     }
 }

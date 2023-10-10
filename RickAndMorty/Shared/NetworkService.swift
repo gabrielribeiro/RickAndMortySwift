@@ -29,18 +29,3 @@ class RMNetworkService: NetworkService {
         task.resume()
     }
 }
-
-class MockNetworkService: NetworkService {
-    var dataToReturn: Data?
-    var responseToReturn: URLResponse?
-    var errorToReturn: Error?
-    
-    func request<T: Codable>(_ type: T.Type, url: URL, completionHandler: @escaping (T?, URLResponse?, Error?) -> Void) {
-        
-        if let dataToReturn = dataToReturn {
-            completionHandler(try? JSONDecoder().decode(type, from: dataToReturn), responseToReturn, errorToReturn)
-        } else {
-            completionHandler(nil, responseToReturn, errorToReturn)
-        }
-    }
-}
