@@ -31,26 +31,30 @@ class CharactersViewModel {
         
         delegate?.loadingDidChange(loading: true)
         
-        apiClient.getCharacters { [weak self] charactersResponse in
-            
-            guard let strongSelf = self else {
-                return
+        do {
+            try apiClient.getCharacters { [weak self] charactersResponse in
+                
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                strongSelf.characters = charactersResponse.results
+                
+                strongSelf.delegate?.loadingDidChange(loading: false)
+                
+                strongSelf.delegate?.didFetchWithSuccess()
+            } fail: { [weak self] error in
+                
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                strongSelf.delegate?.loadingDidChange(loading: false)
+                
+                strongSelf.delegate?.didFail(with: error)
             }
-            
-            strongSelf.characters = charactersResponse.results
-            
-            strongSelf.delegate?.loadingDidChange(loading: false)
-            
-            strongSelf.delegate?.didFetchWithSuccess()
-        } fail: { [weak self] error in
-            
-            guard let strongSelf = self else {
-                return
-            }
-            
-            strongSelf.delegate?.loadingDidChange(loading: false)
-            
-            strongSelf.delegate?.didFail(with: error)
+        } catch {
+            delegate?.didFail(with: error)
         }
     }
 }

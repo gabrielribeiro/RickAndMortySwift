@@ -9,20 +9,29 @@ import Foundation
 
 class API {
     
-    private let urlString = "https://rickandmortyapi.com/api/character"
+    enum APIError: Error {
+        case invalidURL
+    }
     
+    private static let defaultURLString = "https://rickandmortyapi.com/api/character"
+    
+    private let urlString: String
     private let networkService: NetworkService
     
-    init(networkService: NetworkService = RMNetworkService()) {
+    init(
+        networkService: NetworkService = RMNetworkService(),
+        urlString: String = API.defaultURLString
+    ) {
         self.networkService = networkService
+        self.urlString = urlString
     }
     
     func getCharacters(
         success: @escaping ((CharactersResponse) -> Void),
         fail: @escaping ((Error?) -> Void)
-    ) {
+    ) throws {
         guard let url = URL(string: urlString) else {
-            fatalError("URL in incorrect format")
+            throw APIError.invalidURL
         }
         
         networkService.request(CharactersResponse.self, url: url) { charactersResponse, response, error in

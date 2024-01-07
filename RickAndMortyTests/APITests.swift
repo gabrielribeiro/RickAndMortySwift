@@ -10,7 +10,7 @@ final class APITests: XCTestCase {
         
         let api = API()
         
-        api.getCharacters { charactersResponse in
+        try api.getCharacters { charactersResponse in
             XCTAssert(charactersResponse.results.count > 0, "Characters count: \(charactersResponse.results.count)")
             
             expectation.fulfill()
@@ -33,7 +33,7 @@ final class APITests: XCTestCase {
         
         let expectation = XCTestExpectation(description: "Success characters response")
         
-        api.getCharacters(success: { charactersResponse in
+        try api.getCharacters(success: { charactersResponse in
             XCTAssertEqual(charactersResponse.results, [
                 Character(id: 1, name: "Rick", status: "Alive", species: "Human", type: "Scientist", gender: "Male", image: "https://example.com/rick.jpg"),
                 Character(id: 2, name: "Morty", status: "Alive", species: "Human", type: "Sidekick", gender: "Male", image: "https://example.com/morty.jpg")
@@ -47,7 +47,7 @@ final class APITests: XCTestCase {
         wait(for: [expectation], timeout: 10.0)
     }
     
-    func testGetCharactersFail() {
+    func testGetCharactersFail() throws {
         let mockService = MockNetworkService()
         mockService.errorToReturn = NSError(domain: "MockErrorDomain", code: 123, userInfo: nil)
         
@@ -55,7 +55,7 @@ final class APITests: XCTestCase {
         
         let expectation = XCTestExpectation(description: "Failed characters response")
         
-        api.getCharacters(success: { charactersResponse in
+        try api.getCharacters(success: { charactersResponse in
             XCTFail("Wasn't supposed to succeed")
         }, fail: { error in
             let nsError = try! XCTUnwrap(error as? NSError)
@@ -65,6 +65,28 @@ final class APITests: XCTestCase {
             
             expectation.fulfill()
         })
+        
+        wait(for: [expectation], timeout: 10.0)
+    }
+    
+    func testGetCharactersWithInvalidURL() {
+        let api = API(urlString: "ftp://example.com/path/to/resource")
+        
+        let expectation = XCTestExpectation(description: "Invalid URL expected")
+        
+        do {
+            try api.getCharacters(success: { charactersResponse in
+                XCTFail("Wasn't supposed to succeed")
+            }, fail: { error in
+                if let apiError = error as? API.APIError {
+                    expectation.fulfill()
+                } else {
+                    XCTFail("Unexpected error: \(String(describing: error))")
+                }
+            })
+        } catch {
+            XCTFail("An unexpected error was thrown during the call to getCharacters: \(error)")
+        }
         
         wait(for: [expectation], timeout: 10.0)
     }
